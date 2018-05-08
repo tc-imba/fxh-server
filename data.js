@@ -5,8 +5,8 @@ let Data;
 
 const DataSchema = new mongoose.Schema({
     humanity: Number,
-    luminance: Number,
     temperature: Number,
+    luminance: Number,
     moisture: Number,
 }, {
     timestamps: true,

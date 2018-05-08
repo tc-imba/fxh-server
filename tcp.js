@@ -1,7 +1,7 @@
 const net = require('net');
 const Data = require('./data');
 
-const HOST = '192.168.0.121';
+const HOST = '45.76.213.89';
 const PORT = 6969;
 
 let last_sock = null;
@@ -52,7 +52,7 @@ module.exports = {
     water: () => {
         if (last_sock) {
             try {
-                last_sock.send('water');
+                last_sock.write('water');
                 console.log('TCP water: success');
             } catch (e) {
                 console.log('TCP water: error (', e, ')');

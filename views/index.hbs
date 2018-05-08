@@ -3,6 +3,9 @@
 
 <div class="row">
     <div class="col-6">
+        <canvas id="canvas0"></canvas>
+    </div>
+    <div class="col-6">
         <canvas id="canvas1"></canvas>
     </div>
     <div class="col-6">
@@ -10,9 +13,6 @@
     </div>
     <div class="col-6">
         <canvas id="canvas3"></canvas>
-    </div>
-    <div class="col-6">
-        <canvas id="canvas4"></canvas>
     </div>
 </div>
 
@@ -32,25 +32,26 @@
 <script>
     $(document).ready(function () {
         function newDate(days) {
-            return moment().add(days, 'h').toDate();
+            return moment().add(days, '1m').toDate();
         }
 
         function newDateString(days) {
-            return moment().add(days, 'h').format();
+            return moment().add(days, '1m').format();
         }
 
         var color = Chart.helpers.color;
 
-        const getConfig = (name, unit, _color) => ({
+        function getConfig(name, unit, _color, suggestedMin, suggestedMax) {
+            return ({
 
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: name,
-                    backgroundColor: color(_color).alpha(0.5).rgbString(),
-                    borderColor: _color,
-                    fill: false,
-                    data: [{
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: name,
+                        backgroundColor: color(_color).alpha(0.5).rgbString(),
+                        borderColor: _color,
+                        fill: false,
+                        data: [/*{
                         x: newDateString(0),
                         y: randomScalingFactor()
                     }, {
@@ -62,69 +63,105 @@
                     }, {
                         x: newDateString(5),
                         y: randomScalingFactor()
-                    }],
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: false,
-                    text: name + ' Data'
-                },
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        display: true,
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Time'
-                        },
-                        ticks: {
-                            major: {
-                                fontStyle: 'bold',
-                                fontColor: '#FF0000'
-                            }
-                        }
-                    }],
-                    yAxes: [{
-                        display: true,
-                        scaleLabel: {
-                            display: true,
-                            labelString: name + ' / ' + unit
-                        }
+                    }*/],
                     }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: false,
+                        text: name + ' Data'
+                    },
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Time'
+                            },
+                            ticks: {
+                                major: {
+                                    fontStyle: 'bold',
+                                    fontColor: '#FF0000'
+                                }
+                            },
+                            time: {
+                                min: moment().subtract(5, 'm').toDate(),
+                                max: moment().toDate(),
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: name + ' / ' + unit
+                            },
+                            ticks: {
+                                suggestedMin: suggestedMin,
+                                suggestedMax: suggestedMax
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        var i;
+        var myLines = [];
+        var colors = [window.chartColors.red, window.chartColors.blue, window.chartColors.orange, window.chartColors.purple];
+        var names = ['Humidity', 'Temperature', 'Luminance', 'Soil Moisture'];
+        var attrs = ['humanity', 'temperature', 'luminance', 'moisture'];
+        var units = ['%RH', '℃', 'lx', '%'];
+        var limits = [[0, 100], [0, 40], [0, 100], [0, 50]];
+        for (i = 0; i < 4; i++) {
+            myLines.push(new Chart(
+                    document.getElementById('canvas' + i).getContext('2d'),
+                    getConfig(names[i], units[i], colors[i], limits[i][0], limits[i][1])
+            ));
+        }
+
+        function setData(data) {
+            var newData = [[], [], [], []];
+            var i, j;
+            for (i = 0; i < data.length; i++) {
+                for (j = 0; j < 4; j++) {
+                    newData[j].push({x: data[i].updatedAt, y: data[i][attrs[j]]});
                 }
             }
-        });
+            var newTime = {
+                min: moment().subtract(5, 'm').toDate(),
+                max: moment().toDate(),
+            };
+            for (i = 0; i < 4; i++) {
+                myLines[i].data.datasets[0].data = newData[i];
+                myLines[i].options.scales.xAxes[0].time = newTime;
+                myLines[i].update({
+                    duration: 0
+                });
+            }
+            console.log('updated', newTime.max, data);
+        }
 
-
-        window.myLine1 = new Chart(
-                document.getElementById('canvas1').getContext('2d'),
-                getConfig('Humidity', '%RH', window.chartColors.red)
-        );
-        window.myLine2 = new Chart(
-                document.getElementById('canvas2').getContext('2d'),
-                getConfig('Temperature', '℃', window.chartColors.blue)
-        );
-        window.myLine3 = new Chart(
-                document.getElementById('canvas3').getContext('2d'),
-                getConfig('Luminance', 'lx', window.chartColors.orange)
-        );
-        window.myLine4 = new Chart(
-                document.getElementById('canvas4').getContext('2d'),
-                getConfig('Soil Moisture', '%', window.chartColors.purple)
-        );
-
-        $("#btn-water").on('click', () => {
-
+        $("#btn-water").on('click', function () {
             $.get({
                 url: '/water',
                 success: (data) => {
                     console.log(data)
                 }
             });
-
         });
+
+        setInterval(function () {
+            $.get({
+                url: '/data',
+                success: function (data) {
+                    // console.log(JSON.parse(data))
+                    setData(JSON.parse(data));
+                }
+            });
+        }, 1000);
+
 
     });
 </script>
