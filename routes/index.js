@@ -28,7 +28,12 @@ router.get('/data', async function (req, res, next) {
 });
 
 router.get('/water', function (req, res, next) {
-    tcp.water();
+    tcp.send('water');
+    res.send('ok');
+});
+
+router.get('/photo', function (req, res, next) {
+    tcp.send('photo');
     res.send('ok');
 });
 

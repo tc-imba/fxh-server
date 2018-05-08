@@ -19,7 +19,8 @@
 
 <hr/>
 <div class="text-center">
-    <button class="btn btn-sm btn-outline-primary" id="btn-water">Water</button>
+    <button class="btn btn-sm btn-outline-primary mx-2" id="btn-water">Water</button>
+    <button class="btn btn-sm btn-outline-primary mx-2" id="btn-photo">Photo</button>
 </div>
 
 <script src="/node_modules/jquery/dist/jquery.min.js"></script>
@@ -146,6 +147,15 @@
         $("#btn-water").on('click', function () {
             $.get({
                 url: '/water',
+                success: (data) => {
+                    console.log(data)
+                }
+            });
+        });
+
+        $("#btn-photo").on('click', function () {
+            $.get({
+                url: '/photo',
                 success: (data) => {
                     console.log(data)
                 }
