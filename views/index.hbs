@@ -1,0 +1,130 @@
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+
+<div class="row">
+    <div class="col-6">
+        <canvas id="canvas1"></canvas>
+    </div>
+    <div class="col-6">
+        <canvas id="canvas2"></canvas>
+    </div>
+    <div class="col-6">
+        <canvas id="canvas3"></canvas>
+    </div>
+    <div class="col-6">
+        <canvas id="canvas4"></canvas>
+    </div>
+</div>
+
+
+<hr/>
+<div class="text-center">
+    <button class="btn btn-sm btn-outline-primary" id="btn-water">Water</button>
+</div>
+
+<script src="/node_modules/jquery/dist/jquery.min.js"></script>
+<script src="/node_modules/popper.js/dist/umd/popper.min.js"></script>
+<script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/node_modules/moment/min/moment-with-locales.js"></script>
+<script src="/node_modules/chart.js/dist/Chart.min.js"></script>
+<script src="/node_modules/chart.js/samples/utils.js"></script>
+
+<script>
+    $(document).ready(function () {
+        function newDate(days) {
+            return moment().add(days, 'h').toDate();
+        }
+
+        function newDateString(days) {
+            return moment().add(days, 'h').format();
+        }
+
+        var color = Chart.helpers.color;
+
+        const getConfig = (name, unit, _color) => ({
+
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: name,
+                    backgroundColor: color(_color).alpha(0.5).rgbString(),
+                    borderColor: _color,
+                    fill: false,
+                    data: [{
+                        x: newDateString(0),
+                        y: randomScalingFactor()
+                    }, {
+                        x: newDateString(2),
+                        y: randomScalingFactor()
+                    }, {
+                        x: newDateString(4),
+                        y: randomScalingFactor()
+                    }, {
+                        x: newDateString(5),
+                        y: randomScalingFactor()
+                    }],
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: name + ' Data'
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        },
+                        ticks: {
+                            major: {
+                                fontStyle: 'bold',
+                                fontColor: '#FF0000'
+                            }
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: name + ' / ' + unit
+                        }
+                    }]
+                }
+            }
+        });
+
+
+        window.myLine1 = new Chart(
+                document.getElementById('canvas1').getContext('2d'),
+                getConfig('Humidity', '%RH', window.chartColors.red)
+        );
+        window.myLine2 = new Chart(
+                document.getElementById('canvas2').getContext('2d'),
+                getConfig('Temperature', '℃', window.chartColors.blue)
+        );
+        window.myLine3 = new Chart(
+                document.getElementById('canvas3').getContext('2d'),
+                getConfig('Luminance', 'lx', window.chartColors.orange)
+        );
+        window.myLine4 = new Chart(
+                document.getElementById('canvas4').getContext('2d'),
+                getConfig('Soil Moisture', '%', window.chartColors.purple)
+        );
+
+        $("#btn-water").on('click', () => {
+
+            $.get({
+                url: '/water',
+                success: (data) => {
+                    console.log(data)
+                }
+            });
+
+        });
+
+    });
+</script>
