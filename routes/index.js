@@ -20,7 +20,7 @@ async function getData() {
 /* GET home page. */
 router.get('/', async function (req, res, next) {
     const docs = await getData();
-    res.render('index', {title: 'fxhsb', data: docs});
+    res.render('index', {title: 'Intelligent Flowerpot', group: 'ELEC3300 Group11', data: docs});
 });
 
 router.get('/data', async function (req, res, next) {
