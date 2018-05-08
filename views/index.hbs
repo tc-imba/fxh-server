@@ -16,12 +16,19 @@
     </div>
 </div>
 
-
 <hr/>
+
 <div class="text-center">
     <button class="btn btn-sm btn-outline-primary mx-2" id="btn-water">Water</button>
     <button class="btn btn-sm btn-outline-primary mx-2" id="btn-photo">Photo</button>
 </div>
+
+<hr/>
+
+<div class="text-center">
+    <img src="" id="image-loading"/>
+</div>
+
 
 <script src="/node_modules/jquery/dist/jquery.min.js"></script>
 <script src="/node_modules/popper.js/dist/umd/popper.min.js"></script>
@@ -162,12 +169,22 @@
             });
         });
 
+
+
         setInterval(function () {
             $.get({
                 url: '/data',
                 success: function (data) {
                     // console.log(JSON.parse(data))
                     setData(JSON.parse(data));
+                }
+            });
+            $.get({
+                url: '/image',
+                success: function (data) {
+                    // console.log(JSON.parse(data))
+                    //setData(JSON.parse(data));
+                    $("#image-loading").attr('src', data);
                 }
             });
         }, 1000);

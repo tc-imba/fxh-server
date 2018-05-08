@@ -3,6 +3,7 @@ const router = express.Router();
 const tcp = require('../tcp');
 const Data = require('../data');
 const moment = require('moment');
+const fs = require('fs');
 
 async function getData() {
     const end = moment().toDate();
@@ -35,6 +36,20 @@ router.get('/water', function (req, res, next) {
 router.get('/photo', function (req, res, next) {
     tcp.send('photo');
     res.send('ok');
+});
+
+router.get('/image', function (req, res, next) {
+    const files = fs.readdirSync('imgs');
+    let max = -1;
+    files.forEach(file => {
+        const num = file.substring(0, file.indexOf('.'));
+        max = Math.max(max, parseInt(num));
+    });
+    if (max >= 0) {
+        res.send(`imgs/${max}.bmp`);
+    } else {
+        res.send('');
+    }
 });
 
 module.exports = router;

@@ -21,6 +21,7 @@ net.createServer(function (sock) {
         sock.remoteAddress + ':' + sock.remotePort);
     last_sock = sock;
     //bmp_index = -1;
+    let prev_data = null;
 
     // 为这个socket实例添加一个"data"事件处理函数
     sock.on('data', async function (data) {
@@ -29,20 +30,33 @@ net.createServer(function (sock) {
             data = JSON.parse(data);
             console.log(data);
         } catch (e) {
+            data = data.toString();
             if (data === 'bmpstart') {
                 bmp_index = 0;
                 bmp_buf = Buffer.alloc(320 * 240 * 2);
+                const files = fs.readdirSync('imgs');
+                files.forEach(file => fs.unlinkSync(file));
                 console.log(data);
             } else if (data === 'bmpend') {
                 bmp_index = -1;
-                const bmp_data = bmp.bmp(bmp_buf);
-                fs.writeFileSync('test.bmp', bmp_data);
                 console.log(data);
-            } else if (bmp_index >= 0) {
-                const buf = Buffer.from(data);
-                buf.copy(bmp_buf, 320 * 24 * 2 * bmp_index, 0, 320 * 24 * 2);
+            } else if (bmp_index >= 0 && bmp_index < 240) {
+                const pieces = 3;
+                const len = 320 * pieces * 2;
+                if (data.length < len) {
+                    if (data.length > 1300) {
+                        prev_data = data;
+                        return;
+                    } else {
+                        data = prev_data + data;
+                    }
+                }
+                const buf = Buffer.from(data, 'base64');
+                buf.copy(bmp_buf, 320 * pieces * 2 * bmp_index, 0, 320 * pieces * 2);
+                const bmp_data = bmp.bmp(bmp_buf);
+                fs.writeFileSync(`imgs/${bmp_index}.bmp`, bmp_data);
                 ++bmp_index;
-                console.log(buf.length, buf);
+                console.log(bmp_index, buf.length, buf);
             } else {
                 console.log('not parsed', data);
             }
